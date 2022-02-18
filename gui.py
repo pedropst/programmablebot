@@ -9,6 +9,7 @@ import tkinter as tkinter
 import pyautogui
 import main
 import pickle
+import threading
 
 class Scenario():
     def __init__(self, list, name) -> None:
@@ -22,64 +23,6 @@ class Scenario():
     def toPickle(self, file):
         return pickle.dump(self, file)
 
-HEADER_LEN = 4
-actions = ['MOUSE MOVEMENT', 'WAIT', 'SCROLL', 'RIGHT CLICK', 'LEFT CLICK', 'SCROLL CLICK']
-variables = {}
-lines = []
-is_get_pos_enable = False
-
-def save_scenario(scenario_name, lines):
-    s = Scenario(lines, scenario_name)
-    path = fd.askdirectory()
-    file = open(os.path.join(path, scenario_name + '.scen'), 'wb')
-    s.toPickle(file)
-    file.close()
-
-def load_scenario(parent, row, vars1, acts, acts_lines):
-    path = fd.askopenfilename()
-    file = open(path, 'rb')
-    s = pickle.load(file)
-    d = {
-         'MOUSE MOVEMENT': 0, 
-         'WAIT' : 1, 
-         'SCROLL' : 2, 
-         'RIGHT CLICK' : 3, 
-         'LEFT CLICK' :4, 
-         'SCROLL CLICK':5
-         }
-    # acts_lines = []
-    for i in range(0, len(s.parameters)):
-        acts_lines[-1][0].current(d[s.actions[i]])
-        acts_lines[-1][1].insert(0, s.parameters[i])
-        if i < len(s.parameters) - 1:
-            add_new_line(parent, row + i, vars1, acts, acts_lines)
-
-
-    print(len(lines))
-
-def remove_line(row, lines):
-    if row > 0:
-        t = lines[row]
-        for i in range(len(t)):
-            t[i].destroy()
-        lines.pop(row)
-
-def add_new_line(parent, row, vars, acts, acts_lines):
-    vars['action' + str(row)] = tkinter.StringVar()
-
-    action_list = ttk.Combobox(parent, textvariable=vars['action' + str(row)])
-    action_list['values'] = acts
-    action_list.current(0)
-    action_list.grid(row=row, column=0, padx=10, pady=10)
-
-    parameter1 = Entry(parent, width=20)
-    parameter1.grid(row=row, column=1, padx=10, pady=10)
-
-    # parameter2 = Entry(parent, width=20)
-    # parameter2.grid(row=row, column=2, padx=10, pady=10)
-
-    # lines.append((action_list, parameter1, parameter2))
-    lines.append((action_list, parameter1))
 
 def get_pos(entry, root, isEnable):
     isEnable = True
@@ -92,48 +35,135 @@ def get_pos(entry, root, isEnable):
         if keyboard.is_pressed('esc') and type(entry) != tkinter.Entry:
             break
     isEnable = False
+    
 
-def call(root, commands):
-    main.run(commands)
+class Interface(threading.Thread):
+    def __init__(self) -> None:
+        threading.Thread.__init__(self)
+        self.HEADER_LEN = 1
+        self.ACTIONS = ['MOUSE MOVEMENT', 'WAIT', 'SCROLL', 'RIGHT CLICK', 'LEFT CLICK', 'SCROLL CLICK']
+        self.lines = []
+        self.is_get_pos_enable = False
+        self.frame_options = None
+        self.canvas = None
+        self.script = main.Script()
+        self.start()
+    
+    def callback():
+        pass
 
-root = tkinter.Tk()
-root.title('Programmable Bot -')
-root.geometry('490x600')
+    def call(self, root, commands):
+        self.script.run(commands)
+
+    def remove_line(self, row, lines):
+        if row >= 0:
+            t = lines[row]
+            for i in range(len(t)):
+                t[i].destroy()
+            lines.pop(row)
+        self.canvas.config(scrollregion=self.canvas.bbox('all'))
+
+    def save_scenario(self, scenario_name, lines):
+        s = Scenario(lines, scenario_name)
+        path = fd.askdirectory()
+        file = open(os.path.join(path, scenario_name + '.scen'), 'wb')
+        s.toPickle(file)
+        file.close()
+
+    def load_scenario(self, parent, row):
+        path = fd.askopenfilename()
+        file = open(path, 'rb')
+        s = pickle.load(file)
+        d = {
+            'MOUSE MOVEMENT': 0, 
+            'WAIT' : 1, 
+            'SCROLL' : 2, 
+            'RIGHT CLICK' : 3, 
+            'LEFT CLICK' :4, 
+            'SCROLL CLICK':5
+            }
+
+        while len(self.lines) > 0:
+            t = self.lines[0]
+            for i in range(len(t)):
+                t[i].destroy()
+            self.lines.pop(0)
+
+        # self.lines = []
+
+        for i in range(0, len(s.parameters)):
+            self.add_new_line(parent, row + i)
+            self.lines[-1][0].current(d[s.actions[i]])
+            self.lines[-1][1].insert(0, s.parameters[i])
 
 
+    def add_new_line(self, parent, row):
+        action_list = ttk.Combobox(parent)
+        action_list['values'] = self.ACTIONS
+        action_list.current(0)
+        action_list.grid(row=row, column=0, sticky='news')
+        # action_list.grid(row=row, column=0, padx=10, pady=5)
 
-scenario_selection = ttk.Entry(root, width=22)
-scenario_name = scenario_selection.get()
-scenario_selection.grid(row=0, column=0, padx=10, pady=10)
-save_scenario_button = Button(root, text='Save Scenario', command=lambda: save_scenario(scenario_selection.get(), lines), width=19)
-save_scenario_button.grid(row = 0, column=1, sticky='W', padx=10, pady=10)
-load_scenario_button = Button(root, text='Load Scenario', command=lambda: load_scenario(root, len(lines) + HEADER_LEN, variables, actions, lines), width=19)
-load_scenario_button.grid(row = 0, column=2, sticky='W', padx=10, pady=10)
+        parameter1 = Entry(parent, width=20)
+        parameter1.grid(row=row, column=1, stick='news')
 
-add_line_button = Button(root, text='+', command=lambda: add_new_line(root, len(lines) + HEADER_LEN, variables, actions, lines), width=19)
-add_line_button.grid(row=1, column=0, padx=10, pady=10)
-remove_line_button = Button(root, text='-', command=lambda: remove_line(len(lines) - 1, lines), width=19)
-remove_line_button.grid(row=1, column=1, padx=10, pady=10)
-get_pos_button = Button(root, text='Get Position', command=lambda: get_pos(root.focus_get(), root, is_get_pos_enable), width=19)
-get_pos_button.grid(row = 1, column=2, sticky='W', padx=10, pady=10)
+        parent.update_idletasks()
+        # parameter1.grid(row=row, column=1, padx=10, pady=5)
 
-run_button = Button(root, text='Run', command=lambda: call(root, lines), width=19)
-run_button.grid(row = 2, column=2, sticky='W', padx=10, pady=10)
+        self.lines.append((action_list, parameter1))
+        self.canvas.config(scrollregion=self.canvas.bbox('all'))
 
-header_action_label = Label(root, text='ACTION TYPE')
-header_action_label.grid(row=2, column=0)
-header_parameter1_label = Label(root, text='PARAMETER')
-header_parameter1_label.grid(row=2, column=1)
-# header_action_label = Label(root, text='SECOND PARAMETER')
-# header_action_label.grid(row=2, column=2)
+    def run(self):
+        root = tkinter.Tk()
+        root.grid_rowconfigure(0, weight=1)
+        root.grid_columnconfigure(0, weight=1)
+        root.title('Programmable Bot -')
+        root.geometry('400x520')
 
-add_new_line(root, HEADER_LEN, variables, actions, lines)
+        frame_main = Frame(root, bg='gray')
+        frame_main.grid(stick='news')
 
+        scenario_selection = ttk.Entry(frame_main, width=23)
+        scenario_selection.grid(row=0, column=0, padx=10, pady=5)
+        save_scenario_button = Button(frame_main, text='Save Scenario', command=lambda: self.save_scenario(scenario_selection.get(), self.lines), width=19)
+        save_scenario_button.grid(row = 1, column=0, padx=10, pady=5)
+        load_scenario_button = Button(frame_main, text='Load Scenario', command=lambda: self.load_scenario(self.frame_options, len(self.lines) + self.HEADER_LEN), width=19)
+        load_scenario_button.grid(row = 2, column=0, padx=10, pady=5)
 
+        add_line_button = Button(frame_main, text='+', command=lambda: self.add_new_line(self.frame_options, len(self.lines) + self.HEADER_LEN), width=19)
+        add_line_button.grid(row=3, column=0, padx=10, pady=5)
+        remove_line_button = Button(frame_main, text='-', command=lambda: self.remove_line(len(self.lines) - 1, self.lines), width=19)
+        remove_line_button.grid(row=4, column=0, padx=10, pady=5)
+        get_pos_button = Button(frame_main, text='Get Position', command=lambda: get_pos(root.focus_get(), frame_main, self.is_get_pos_enable), width=19)
+        get_pos_button.grid(row = 5, column=0, padx=10, pady=5)
 
+        run_button = Button(frame_main, text='Run', command=lambda: self.call(frame_main, self.lines), width=19)
+        run_button.grid(row = 6, column=0, padx=10, pady=5)
 
+        frame_action = Frame(frame_main)
+        frame_action.grid(row=8, column=0, pady=(5, 0), sticky='nw')
+        frame_action.grid_rowconfigure(0, weight=1)
+        frame_action.grid_columnconfigure(0, weight=1)
+        # frame_action.grid_propagate(False)
 
+        self.canvas = Canvas(frame_action)
+        self.canvas.grid(row=0, column=0, sticky='news')
 
+        vsb = Scrollbar(frame_action, orient='vertical', command=self.canvas.yview)
+        vsb.grid(row=0, column=1, sticky='ns')
+        self.canvas.configure(yscrollcommand=vsb.set)
 
+    
+        self.frame_options = Frame(self.canvas)
+        self.canvas.create_window((0,0), window=self.frame_options, anchor='nw')
 
-root.mainloop()
+        header_action_label = Label(self.frame_options, text='ACTION TYPE', width=23, font='Helvetica 10 bold')
+        header_action_label.grid(row=0, column=0, sticky='news')
+        header_parameter1_label = Label(self.frame_options, text='PARAMETER', width=23, font='Helvetica 10 bold')
+        header_parameter1_label.grid(row=0, column=1, sticky='news')
+        # self.add_new_line(root, self.HEADER_LEN)
+
+        self.canvas.config(scrollregion=self.canvas.bbox('all'))
+        root.mainloop()
+
+i = Interface()
