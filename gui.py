@@ -10,6 +10,7 @@ import pyautogui
 import main
 import pickle
 import threading
+import position
 
 class Scenario():
     def __init__(self, list, name) -> None:
@@ -25,16 +26,8 @@ class Scenario():
 
 
 def get_pos(entry, root, isEnable):
-    isEnable = True
-    while 1:
-        if isEnable and keyboard.is_pressed('esc') and type(entry) == tkinter.Entry:
-            entry.delete(0, END)
-            entry.insert(0, f"{str(pyautogui.position().x)},{str(pyautogui.position().y)}")
-            root.focus_force()
-            break
-        if keyboard.is_pressed('esc') and type(entry) != tkinter.Entry:
-            break
-    isEnable = False
+    p = position.Position()
+    p.call(entry, isEnable, root)
     
 
 class Interface(threading.Thread):
@@ -53,7 +46,8 @@ class Interface(threading.Thread):
         pass
 
     def call(self, root, commands):
-        self.script.run(commands)
+        self.script.call(commands)
+        self.script = main.Script()
 
     def remove_line(self, row, lines):
         if row >= 0:
