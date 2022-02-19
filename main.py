@@ -2,6 +2,7 @@ from concurrent.futures import thread
 import pyautogui
 import time
 import threading
+import loops
 
 def handle_loop1(commands, count):
     for m in range(count):
@@ -70,29 +71,66 @@ class Script(threading.Thread):
         runcommand = []
         for i in range(len(commands)):
             if commands[i][0].get() == 'MOUSE MOVEMENT':
-                pyautogui.moveTo(x=int(commands[i][1].get().split(',')[0]), y=int(commands[i][1].get().split(',')[1]))
+                runcommand.append(commands[i])
+                # pyautogui.moveTo(x=int(commands[i][1].get().split(',')[0]), y=int(commands[i][1].get().split(',')[1]))
             elif commands[i][0].get() == 'WAIT':
-                time.sleep(int(commands[i][1].get()))
+                runcommand.append(commands[i])
+                # time.sleep(int(commands[i][1].get()))
             elif commands[i][0].get() == 'SCROLL':
-                pyautogui.scroll(int(commands[i][1].get()))
+                runcommand.append(commands[i])
+                # pyautogui.scroll(int(commands[i][1].get()))
             elif commands[i][0].get() == 'LEFT CLICK':
-                if not commands[i][1].get().__contains__(','):
-                    pyautogui.click(clicks=int(commands[i][1].get()), interval=0.02, button=pyautogui.LEFT)
-                else:
-                    pyautogui.click(clicks=int(commands[i][1].get().split(',')[0]), interval=float(commands[i][1].get().split(',')[1]), button=pyautogui.LEFT)
+                runcommand.append(commands[i])
+                # if not commands[i][1].get().__contains__(','):
+                #     pyautogui.click(clicks=int(commands[i][1].get()), interval=0.02, button=pyautogui.LEFT)
+                # else:
+                #     pyautogui.click(clicks=int(commands[i][1].get().split(',')[0]), interval=float(commands[i][1].get().split(',')[1]), button=pyautogui.LEFT)
             elif commands[i][0].get() == 'RIGHT CLICK':
-                pyautogui.click(clicks=int(commands[i][1].get()), interval=0.02, button=pyautogui.RIGHT)
+                runcommand.append(commands[i])
+                # pyautogui.click(clicks=int(commands[i][1].get()), interval=0.02, button=pyautogui.RIGHT)
             elif commands[i][0].get() == 'SCROLL CLICK':
-                pyautogui.click(clicks=int(commands[i][1].get()), interval=0.02, button=pyautogui.MIDDLE)
+                runcommand.append(commands[i])
+                # pyautogui.click(clicks=int(commands[i][1].get()), interval=0.02, button=pyautogui.MIDDLE)
             elif commands[i][0].get() == 'START LOOP':
+                count = int(commands[i][1].get().split(',')[1])
                 j = 1
-                loop_commands = []
-                itet = int(commands[i][1].get().split(',')[1])
-                while (commands[i + j][0].get() != 'END LOOP') and (commands[i + j][1].get() == commands[i][1].get().split(',')[0]) and commands[i + j][0].get() != 'START LOOP':
-                    loop_commands.append(commands[i + j])
+                while 1:
+                    if j+i >= len(commands[i]) or (commands[i + j][0].get() != 'END LOOP' and commands[i + j][1].get() == commands[i][1].get().split(',')[0]):
+                        break
                     j += 1
-                for _ in range(itet):
-                    runcommand.append(loop_commands)
-                # print(loop_commands)
-                # handle_loop(loop_commands, itet)
+                inner_commands = commands[i:i+j]
+                print(len(inner_commands))
+                l = loops.Loops(i, i + j, count, commands)
+
+                for j in range(0, len(l.expanded_commands)):
+                    runcommand.append(j)
+                # j = 1
+                # loop_commands = []
+                # itet = int(commands[i][1].get().split(',')[1])
+                # while (commands[i + j][0].get() != 'END LOOP') and (commands[i + j][1].get() == commands[i][1].get().split(',')[0]) and commands[i + j][0].get() != 'START LOOP':
+                #     loop_commands.append(commands[i + j])
+                #     j += 1
+                # for _ in range(itet):
+                #     runcommand.append(loop_commands)
+                # # print(loop_commands)
+                # # handle_loop(loop_commands, itet)
+        
+        for i in range(len(runcommand)):
+            print(runcommand[i][0].get())
+            if runcommand[i][0].get() == 'MOUSE MOVEMENT':
+                pyautogui.moveTo(x=int(runcommand[i][1].get().split(',')[0]), y=int(runcommand[i][1].get().split(',')[1]))
+            elif runcommand[i][0].get() == 'WAIT':
+                time.sleep(int(runcommand[i][1].get()))
+            elif runcommand[i][0].get() == 'SCROLL':
+                pyautogui.scroll(int(runcommand[i][1].get()))
+            elif runcommand[i][0].get() == 'LEFT CLICK':
+                if not runcommand[i][1].get().__contains__(','):
+                    pyautogui.click(clicks=int(runcommand[i][1].get()), interval=0.02, button=pyautogui.LEFT)
+                else:
+                    pyautogui.click(clicks=int(runcommand[i][1].get().split(',')[0]), interval=float(runcommand[i][1].get().split(',')[1]), button=pyautogui.LEFT)
+            elif runcommand[i][0].get() == 'RIGHT CLICK':
+                pyautogui.click(clicks=int(runcommand[i][1].get()), interval=0.02, button=pyautogui.RIGHT)
+            elif runcommand[i][0].get() == 'SCROLL CLICK':
+                pyautogui.click(clicks=int(runcommand[i][1].get()), interval=0.02, button=pyautogui.MIDDLE)
+
         self = None
