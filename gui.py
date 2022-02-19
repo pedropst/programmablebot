@@ -1,7 +1,6 @@
 from tkinter import filedialog as fd
 from tkinter import *
 from tkinter import ttk
-from turtle import width
 
 import keyboard
 import os
@@ -10,6 +9,7 @@ import pyautogui
 import main
 import pickle
 import threading
+import position
 
 class Scenario():
     def __init__(self, list, name) -> None:
@@ -25,23 +25,17 @@ class Scenario():
 
 
 def get_pos(entry, root, isEnable):
-    isEnable = True
-    while 1:
-        if isEnable and keyboard.is_pressed('esc') and type(entry) == tkinter.Entry:
-            entry.delete(0, END)
-            entry.insert(0, f"{str(pyautogui.position().x)},{str(pyautogui.position().y)}")
-            root.focus_force()
-            break
-        if keyboard.is_pressed('esc') and type(entry) != tkinter.Entry:
-            break
-    isEnable = False
+    p = position.Postion()
+    p.call(entry, isEnable, root)
+
+
     
 
 class Interface(threading.Thread):
     def __init__(self) -> None:
         threading.Thread.__init__(self)
         self.HEADER_LEN = 1
-        self.ACTIONS = ['MOUSE MOVEMENT', 'WAIT', 'SCROLL', 'RIGHT CLICK', 'LEFT CLICK', 'SCROLL CLICK']
+        self.ACTIONS = ['MOUSE MOVEMENT', 'WAIT', 'SCROLL', 'RIGHT CLICK', 'LEFT CLICK', 'SCROLL CLICK', 'START LOOP', 'END LOOP']
         self.lines = []
         self.is_get_pos_enable = False
         self.frame_options = None
@@ -75,12 +69,14 @@ class Interface(threading.Thread):
         file = open(path, 'rb')
         s = pickle.load(file)
         d = {
-            'MOUSE MOVEMENT': 0, 
-            'WAIT' : 1, 
-            'SCROLL' : 2, 
-            'RIGHT CLICK' : 3, 
-            'LEFT CLICK' :4, 
-            'SCROLL CLICK':5
+            'MOUSE MOVEMENT': 0,
+            'WAIT' : 1,
+            'SCROLL' : 2,
+            'RIGHT CLICK' : 3,
+            'LEFT CLICK' :4,
+            'SCROLL CLICK':5,
+            'START LOOP':6,
+            'END LOOP':7
             }
 
         while len(self.lines) > 0:
