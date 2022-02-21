@@ -6,7 +6,7 @@ from tkinter import *
 from tkinter import ttk
 import tkinter as tkinter
 from pynput import keyboard
-
+import time
 
 def on_release(key):
     if key == keyboard.Key.esc:
@@ -41,10 +41,14 @@ class Postion(threading.Thread):
     def run(self):
         isEnable = True
         if isEnable and type(self.entry) == tkinter.Entry:
-            with keyboard.Listener(
-                on_press=self.on_press,
-                on_release=on_release) as listener:
-                listener.join()
+            time.sleep(5)
+            self.entry.delete(0, END)
+            self.entry.insert(0, f"{str(pyautogui.position().x)},{str(pyautogui.position().y)}")
+            self.root.focus_force()
+            # with keyboard.Listener(
+            #     on_press=self.on_press,
+            #     on_release=on_release) as listener:
+            #     listener.join()
         # isEnable = True
         # while 1:
         #     if isEnable and keyboard.is_pressed('esc') and type(self.entry) == tkinter.Entry:

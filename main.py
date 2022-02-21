@@ -27,20 +27,27 @@ class Script(threading.Thread):
 
     def run(self):
         self.isAlive = False
-        while 1:
-            for m in range(int(self.commands[0][1].get()) +1):
-                if m%15 != 0 or m == 0:
-                    self.virtual_button(1)
-                    self.virtual_button(5)
-                    self.virtual_button(9)
-                    self.virtual_button(17)
-                    self.virtual_button(21)
-                    self.virtual_button(25)
-                    self.virtual_button(29)
-                else:
-                    self.virtual_button(5)
-                    self.virtual_button(9)
+        for m in range(int(self.commands[0][1].get()) +1):
+            self.virtual_button(1)
+            self.virtual_button(5)
+            self.virtual_button(9)
             self.virtual_button(13)
+            self.virtual_button(17)
+            self.virtual_button(21)
+            self.virtual_button(25)
+            self.virtual_button(29)
+                # if m%15 != 0 or m == 0:
+                #     self.virtual_button(1)
+                #     self.virtual_button(5)
+                #     self.virtual_button(9)
+                #     self.virtual_button(17)
+                #     self.virtual_button(21)
+                #     self.virtual_button(25)
+                #     self.virtual_button(29)
+                # else:
+                #     self.virtual_button(5)
+                #     self.virtual_button(9)
+            # self.virtual_button(13)
 
 
 

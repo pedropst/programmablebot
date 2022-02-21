@@ -34,7 +34,7 @@ class Interface():
         # threading.Thread.__init__(self)
         self.HEADER_LEN = 1
         self.ACTIONS = ['LOOP', 'BUTTON1', 'BUTTON2', 'BUTTON3', 'BUTTON4', 'BUTTON5', 
-        'BUTTON6', 'BUTTON7', 'BUTTON8', 'WAIT AFTER BUTTON', 'WAIT BETWEEN CLICKS', 'REPEAT BUTTON']
+        'BUTTON6', 'BUTTON7', 'BUTTON8', 'REPEAT BUTTON', 'WAIT BETWEEN CLICKS', 'WAIT AFTER BUTTON']
         # self.ACTIONS = ['MOUSE MOVEMENT', 'WAIT', 'SCROLL', 'RIGHT CLICK', 'LEFT CLICK', 'SCROLL CLICK', 'START LOOP', 'END LOOP']
         self.lines = []
         self.is_get_pos_enable = False
@@ -95,15 +95,21 @@ class Interface():
 
         for i in range(0, len(s.parameters)):
             self.add_new_line(parent, row + i)
-            self.lines[-1][0].current(d[s.actions[i]])
+            # self.lines[-1][0].current(d[s.actions[i]])
+            self.lines[-1][0].config(text = s.actions[i])
             self.lines[-1][1].insert(0, s.parameters[i])
 
 
     def add_new_line(self, parent, row):
-        action_list = ttk.Combobox(parent)
-        action_list['values'] = self.ACTIONS
-        action_list.current(0)
+        action_list = Label(parent)
         action_list.grid(row=row, column=0, sticky='news')
+        action_list.grid(row=row, column=0, padx=10, pady=5)
+
+        # action_list = ttk.Combobox(parent)
+        # action_list['values'] = self.ACTIONS
+        # action_list.current(0)
+        # action_list.grid(row=row, column=0, sticky='news')
+        # action_list.state = DISABLED
         # action_list.grid(row=row, column=0, padx=10, pady=5)
 
         parameter1 = Entry(parent, width=20)
