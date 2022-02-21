@@ -28,9 +28,10 @@ def get_pos(entry, root, isEnable):
 
     
 
-class Interface(threading.Thread):
+# class Interface(threading.Thread):
+class Interface():
     def __init__(self) -> None:
-        threading.Thread.__init__(self)
+        # threading.Thread.__init__(self)
         self.HEADER_LEN = 1
         self.ACTIONS = ['LOOP', 'BUTTON1', 'BUTTON2', 'BUTTON3', 'BUTTON4', 'BUTTON5', 
         'BUTTON6', 'BUTTON7', 'BUTTON8', 'WAIT AFTER BUTTON', 'WAIT BETWEEN CLICKS', 'REPEAT BUTTON']
@@ -40,7 +41,8 @@ class Interface(threading.Thread):
         self.frame_options = None
         self.canvas = None
         self.script = main.Script()
-        self.start()
+        # self.start()
+        self.run()
     
     def callback():
         pass
@@ -120,7 +122,7 @@ class Interface(threading.Thread):
         root.title('Programmable Bot -')
         root.geometry('400x520')
 
-        frame_main = Frame(root, bg='gray')
+        frame_main = Frame(root)
         frame_main.grid(stick='news')
 
         scenario_selection = ttk.Entry(frame_main, width=23)
