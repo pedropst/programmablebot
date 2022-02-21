@@ -1,11 +1,8 @@
 from tkinter import filedialog as fd
 from tkinter import *
 from tkinter import ttk
-
-import keyboard
 import os
 import tkinter as tkinter
-import pyautogui
 import main
 import pickle
 import threading
@@ -35,7 +32,8 @@ class Interface(threading.Thread):
     def __init__(self) -> None:
         threading.Thread.__init__(self)
         self.HEADER_LEN = 1
-        self.ACTIONS = ['FIRST LOOP', 'SECOND LOOP', 'BUTTON1', 'BUTTON2', 'BUTTON3', 'BUTTON4', 'WAIT BETWEEN BUTTONS', 'WAIT BETWEEN LOOPS']
+        self.ACTIONS = ['LOOP', 'BUTTON1', 'BUTTON2', 'BUTTON3', 'BUTTON4', 'BUTTON5', 
+        'BUTTON6', 'BUTTON7', 'BUTTON8', 'WAIT AFTER BUTTON', 'WAIT BETWEEN CLICKS', 'REPEAT BUTTON']
         # self.ACTIONS = ['MOUSE MOVEMENT', 'WAIT', 'SCROLL', 'RIGHT CLICK', 'LEFT CLICK', 'SCROLL CLICK', 'START LOOP', 'END LOOP']
         self.lines = []
         self.is_get_pos_enable = False
@@ -71,14 +69,18 @@ class Interface(threading.Thread):
         file = open(path, 'rb')
         s = pickle.load(file)
         d = {
-            'FIRST LOOP' : 0,
-            'SECOND LOOP' : 1,
-            'BUTTON1' : 2,
-            'BUTTON2' : 3,
-            'BUTTON3' : 4,
-            'BUTTON4': 5,
-            'WAIT BETWEEN BUTTONS' : 6,
-            'WAIT BETWEEN LOOPS' : 7
+            'LOOP' : 0,
+            'BUTTON1' : 1,
+            'BUTTON2' : 2,
+            'BUTTON3' : 3,
+            'BUTTON4': 4,
+            'BUTTON5': 5,
+            'BUTTON6': 6,
+            'BUTTON7': 7,
+            'BUTTON8': 8,
+            'WAIT AFTER BUTTON' : 9,
+            'WAIT BETWEEN CLICKS' : 10,
+            'REPEAT BUTTON' : 11
             }
 
         while len(self.lines) > 0:
@@ -128,10 +130,10 @@ class Interface(threading.Thread):
         load_scenario_button = Button(frame_main, text='Load Scenario', command=lambda: self.load_scenario(self.frame_options, len(self.lines) + self.HEADER_LEN), width=19)
         load_scenario_button.grid(row = 2, column=0, padx=10, pady=5)
 
-        # add_line_button = Button(frame_main, text='+', command=lambda: self.add_new_line(self.frame_options, len(self.lines) + self.HEADER_LEN), width=19)
-        # add_line_button.grid(row=3, column=0, padx=10, pady=5)
-        # remove_line_button = Button(frame_main, text='-', command=lambda: self.remove_line(len(self.lines) - 1, self.lines), width=19)
-        # remove_line_button.grid(row=4, column=0, padx=10, pady=5)
+        add_line_button = Button(frame_main, text='+', command=lambda: self.add_new_line(self.frame_options, len(self.lines) + self.HEADER_LEN), width=19)
+        add_line_button.grid(row=3, column=0, padx=10, pady=5)
+        remove_line_button = Button(frame_main, text='-', command=lambda: self.remove_line(len(self.lines) - 1, self.lines), width=19)
+        remove_line_button.grid(row=4, column=0, padx=10, pady=5)
         get_pos_button = Button(frame_main, text='Get Position', command=lambda: get_pos(root.focus_get(), frame_main, self.is_get_pos_enable), width=19)
         get_pos_button.grid(row = 5, column=0, padx=10, pady=5)
 
